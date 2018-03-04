@@ -27,28 +27,34 @@ if(TRUE){
   
   #Import raw data
   #data = read.csv("data1_dbdc_raw.csv")
-  data = read.csv("data1_dbdc_cleaned.csv")
+  data_raw = read.csv("data1_dbdc_cleaned.csv")
   
   #Include response variables with (0,1) formatting, conditional bid values, renamed variables
-  dataV2 <- data.frame(cbind("R1" = data$first #1-yes, 2-no
-                             ,"R2" = data$second #1-yes, 2-no
+  dataV2 <- data.frame(cbind("R1" = data_raw$first #1-yes, 2-no
+                             ,"R2" = data_raw$second #1-yes, 2-no
                              ,"BD1" = 9.99 #initial bid
-                             ,"BD2" = data$finalamt #second bid (up if R1=1, else down)
-                             ,"dem.age" = data$screener_age
-                             ,"dem.female" = data$screener_gender
-                             ,"dem.education" = data$ed_screener
-                             ,"dem.income" = data$income_screener
-                             ,"dem.employmentcode" = data$employment_status
-                             ,"dem.employmentdummy" = data$employment_status
-                             ,"dem.ethnicity" = data$ethnicity_screener
-                             ,"Aroma" = data$Aroma
-                             ,"Appearance" = data$Appearance
-                             ,"Taste" = data$Taste.Flavor
-                             ,"Overall" = data$Overall
-                             ,"PrimaryShopper" = data$X1.Primary_Shopper
-                             ,"AvgConsumption" = data$X2.Avg_consumption
+                             ,"BD2" = data_raw$finalamt #second bid (up if R1=1, else down)
+                             ,"dem.age" = data_raw$screener_age
+                             ,"dem.female" = data_raw$screener_gender
+                             ,"dem.education" = data_raw$ed_screener
+                             ,"dem.income" = data_raw$income_screener
+                             ,"dem.employmentcode" = data_raw$employment_status
+                             ,"dem.employmentdummy" = data_raw$employment_status
+                             ,"dem.ethnicity" = data_raw$ethnicity_screener
+                             ,"dem.hhsize" = data_raw$numhh
+                             ,"dem.married" = data_raw$married
+                             ,"sensory.Aroma" = data_raw$Aroma
+                             ,"sensory.Appearance" = data_raw$Appearance
+                             ,"sensory.Taste" = data_raw$taste
+                             ,"sensory.Overall" = data_raw$Overall
+                             #,"PrimaryShopper" = data_raw$X1.Primary_Shopper
+                             #,"AvgConsumption" = data_raw$X2.Avg_consumption
   ))
 
+  #temporary tool to play around with tabulate/check with Megan's numbers
+  dat <- dataV2[complete.cases(dataV2[,]),]
+  tabulate(dat$dem.married)
+  
   #Reformat specific variables
   #Gender
     dataV2$dem.female[dataV2$dem.female==1] <- NA #Recode unspecified gender (initially 1) to NA
@@ -86,7 +92,7 @@ if(TRUE){
     dataV2$dem.employmentcode[dataV2$dem.employmentcode==6] <- 2 #Recode "Retired" (initially 6) to NA
     dataV2$dem.employmentcode[dataV2$dem.employmentcode==7] <- 3 #Recode "Student" (initially 7) to NA
     dataV2$dem.employmentcode[dataV2$dem.employmentcode==8] <- 1 #Recode "Unemployed" (initially 8) to NA
-  #New Employment Dummy (Treated as a dummy of certainty of income from employment)
+  #New Employment Dummy (treated as a dummy of certainty of income from employment)
     dataV2$dem.employmentdummy[dataV2$dem.employmentdummy==1] <- NA #Unspecified employment (initially 1) to NA
     dataV2$dem.employmentdummy[dataV2$dem.employmentdummy==2] <- 1 #Recode "Full Time" (initially 2) to 1
     dataV2$dem.employmentdummy[dataV2$dem.employmentdummy==3] <- 1 #Recode "Part Time" (initially 3) to 1
@@ -95,9 +101,32 @@ if(TRUE){
     dataV2$dem.employmentdummy[dataV2$dem.employmentdummy==6] <- 0 #Recode "Retired" (initially 6) to 0
     dataV2$dem.employmentdummy[dataV2$dem.employmentdummy==7] <- 0 #Recode "Student" (initially 7) to 0
     dataV2$dem.employmentdummy[dataV2$dem.employmentdummy==8] <- 0 #Recode "Unemployed" (initially 8) to 0
-
-    
-dataV3 <- data.frame(cbind("Constant"=rep(1,nrow(dataV2))
+  #Ethnicity Dummies
+    #Asian
+      dataV2$dem.ethnicity.asian = 0
+      dataV2$dem.ethnicity.asian[dataV2$dem.ethnicity==1] <- NA #Unspecified ethnicity (initially 1) to NA
+     #dataV2$dem.ethnicity.asian[dataV2$dem.ethnicity==5] <- NA #"Other" ethnicity (initially 5) to NA 
+      dataV2$dem.ethnicity.asian[dataV2$dem.ethnicity==2] <- 1 #Asian (initially 2) to 1  
+    #Black
+      dataV2$dem.ethnicity.black = 0 #Initialize dummy as zero
+      dataV2$dem.ethnicity.black[dataV2$dem.ethnicity==1] <- NA #Unspecified ethnicity (initially 1) to NA
+     #dataV2$dem.ethnicity.black[dataV2$dem.ethnicity==5] <- NA #"Other" ethnicity (initially 5) to NA 
+      dataV2$dem.ethnicity.black[dataV2$dem.ethnicity==3] <- 1 #Black (initially 3) to 1
+    #Latino
+      dataV2$dem.ethnicity.latino = 0 #Initialize dummy as zero
+      dataV2$dem.ethnicity.latino[dataV2$dem.ethnicity==1] <- NA #Unspecified ethnicity (initially 1) to NA
+     #dataV2$dem.ethnicity.latino[dataV2$dem.ethnicity==5] <- NA #"Other" ethnicity (initially 5) to NA 
+      dataV2$dem.ethnicity.latino[dataV2$dem.ethnicity==4] <- 1 #Latino (initially 4) to 1
+    #White
+      dataV2$dem.ethnicity.white = 0 #Initialize dummy as zero
+      dataV2$dem.ethnicity.white[dataV2$dem.ethnicity==1] <- NA #Unspecified ethnicity (initially 1) to NA
+     #dataV2$dem.ethnicity.white[dataV2$dem.ethnicity==5] <- NA #"Other" ethnicity (initially 5) to NA 
+      dataV2$dem.ethnicity.white[dataV2$dem.ethnicity==6] <- 1 #White (initially 6) to 1
+      
+  
+      
+      
+      dataV3 <- data.frame(cbind("Constant"=rep(1,nrow(dataV2))
                            ,"B1"=dataV2$BD1
                            ,"B2u"=dataV2$BD2
                            ,"B2d"=dataV2$BD2))
